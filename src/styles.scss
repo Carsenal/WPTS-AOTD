@@ -1,1 +1,76 @@
+
+@import '~@angular/material/theming';
+@include mat-core();
+
+@function generateTheme($color) {
+    $primary: generatePalette($color);
+    $accent: generatePalette($color);
+    //$accent: generatePalette(adjust-hue($color, 120));
+    $warn: mat-palette($mat-red);
+    @return mat-light-theme($primary, $accent, $warn);
+}
+
+@function generatePalette($color) {
+    // Using Constatin algorithim for color palette generation
+    $accent: adjust-hue($color, 20);
+    $dark: rgb(0, 0, 0);
+    $const-settings : (
+        (weight : 50,  mixRate : 12%, mix1 : $color, mix2 : #FFFFFF),
+        (weight : 100, mixRate : 30%, mix1 : $color, mix2 : #FFFFFF),
+        (weight : 200, mixRate : 50%, mix1 : $color, mix2 : #FFFFFF),
+        (weight : 300, mixRate : 70%, mix1 : $color, mix2 : #FFFFFF),
+        (weight : 400, mixRate : 85%, mix1 : $color, mix2 : #FFFFFF),
+        (weight : 500, mixRate :100%, mix1 : $color, mix2 : #FFFFFF),
+        (weight : 600, mixRate : 87%, mix1 : $color, mix2 : $dark),
+        (weight : 700, mixRate : 70%, mix1 : $color, mix2 : $dark),
+        (weight : 800, mixRate : 54%, mix1 : $color, mix2 : $dark),
+        (weight : 900, mixRate : 25%, mix1 : $color, mix2 : $dark),
+        (weight :A100, mixRate : 50%, mix1 :$accent, mix2 : #FFFFFF),
+        (weight :A200, mixRate :100%, mix1 :$accent, mix2 : #FFFFFF),
+        (weight :A400, mixRate : 70%, mix1 :$accent, mix2 : $dark),
+        (weight :A700, mixRate : 50%, mix1 :$accent, mix2 : $dark)
+    );
+    $palette: ();
+    $contrastMap: ();
+    @for $i from 1 through 14{
+        $weight: map-get(nth($const-settings, $i), weight);
+        $mixWeight: map-get(nth($const-settings, $i), mixRate);
+        $mix1: map-get(nth($const-settings, $i), mix1);
+        $mix2: map-get(nth($const-settings, $i), mix2);
+        $newColor: mix($mix1, $mix2, $mixWeight);
+        @if $i == 1 {
+            $palette: ($weight : $newColor);
+            $contrastMap: ($weight : contrast($newColor));
+        }
+        @else {
+            $palette: map-merge($palette, ($weight : $newColor));
+            $contrastMap: map-merge($contrastMap, ($weight : contrast($newColor)));
+        }
+    }
+    $palette: map-merge($palette, (contrast : ($contrastMap)));
+    @return mat-palette($palette);
+}
+
+@function contrast($color){
+    @if (lightness($color) > 50){ @return #000000; }
+    @else { @return #FFFFFF; }
+}
+
+$WPTS-AOTD-primary: mat-palette($mat-indigo);
+$WPTS-AOTD-accent: mat-palette($mat-pink, A200, A100, A400);
+
+// The warn palette is optional (defaults to red).
+$WPTS-AOTD-warn: mat-palette($mat-red);
+
+// Create the theme object (a Sass map containing all of the palettes).
+$WPTS-AOTD-theme: mat-light-theme($WPTS-AOTD-primary, $WPTS-AOTD-accent, $WPTS-AOTD-warn);
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include angular-material-theme($WPTS-AOTD-theme);
+
 /* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
